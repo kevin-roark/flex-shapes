@@ -6,12 +6,21 @@ var finder = new frampton.MediaFinder(mediaConfig);
 var drumline1 = require('./drumline1.json').tracks[0];
 var drumline2 = require('./drumline2.json').tracks[0];
 
-var initialDelay = 2000;
+var initialDelay = 400;
 var accumulatedDelay = initialDelay;
 
 var renderer = new frampton.WebRenderer({
   mediaConfig: mediaConfig
 });
+
+var audio = document.createElement('audio');
+audio.src = 'Supernormal.mp3';
+audio.play();
+
+//
+// audio.onplay = function() {
+//   var accumulatedDelay = 400;
+// };
 
 var tracks = [drumline1, drumline2];
 var colors;
@@ -37,12 +46,12 @@ tracks.forEach(function(track, trackIndex) {
 
       case 36:
         div.style.left = '33%';
-        div.style.background = colors[1];
+        // div.style.background = colors[1];
         break;
 
       case 42:
         div.style.left = '66.7%';
-        div.style.background = colors[2];
+        // div.style.background = colors[2];
         break;
     }
 
