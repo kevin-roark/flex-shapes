@@ -1,5 +1,5 @@
 
-var frampton = require('./dist/web-frampton');
+var frampton = require('../frampton/dist/web-frampton');
 var mediaConfig = require('./shapes_config.json');
 var jsonMidi = require('./f1k.json');
 var finder = new frampton.MediaFinder(mediaConfig);
