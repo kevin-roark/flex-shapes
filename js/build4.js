@@ -29667,20 +29667,20 @@ var finder = new frampton.MediaFinder(mediaConfig);
 var drumline1 = require('./drumline1.json').tracks[0];
 var drumline2 = require('./drumline2.json').tracks[0];
 
-var initialDelay = 400;
-var accumulatedDelay = initialDelay;
+var initialDelay = 200;
+var accumulatedDelay = 300;
 
 var renderer = new frampton.WebRenderer({
   mediaConfig: mediaConfig
 });
 
 var audio = document.createElement('audio');
-audio.src = 'Supernormal.mp3';
+audio.src = 'combined.mp3';
 audio.play();
 
-//
+
 // audio.onplay = function() {
-//   var accumulatedDelay = 400;
+//   var accumulatedDelay = 22500;
 // };
 
 var tracks = [drumline1, drumline2];
@@ -29700,19 +29700,19 @@ tracks.forEach(function(track, trackIndex) {
     div.style.height = '50%'; div.style.top = '25%';
 
     switch (el.noteNumber) {
-      case 38:
+      case 36:
         div.style.left = '0';
         div.style.background = colors[0];
         break;
 
-      case 36:
+      case 38:
         div.style.left = '33%';
-        // div.style.background = colors[1];
+        div.style.background = colors[1];
         break;
 
       case 42:
         div.style.left = '66.7%';
-        // div.style.background = colors[2];
+        div.style.background = colors[2];
         break;
     }
 
@@ -30491,7 +30491,9 @@ module.exports = function (_Renderer) {
     _this.startPerceptionCorrection = options.startPerceptionCorrection || 13; // this is constant
 
     _this.videoSourceMaker = options.videoSourceMaker !== undefined ? options.videoSourceMaker : function (filename) {
-      return _this.mediaConfig.path + filename;
+      var mediaPath = _this.mediaConfig.path;
+      if (mediaPath[mediaPath.length - 1] !== '/') mediaPath += '/';
+      return mediaPath + filename;
     };
 
     _this.domContainer = document.body;
@@ -30634,7 +30636,11 @@ module.exports = function (_Renderer) {
       var segmentDuration = segment.msDuration();
       var expectedStart = window.performance.now() + offset;
 
+      var hasPlayedFirstTime = false;
       video.addEventListener('playing', function () {
+        if (hasPlayedFirstTime) return;
+
+        hasPlayedFirstTime = true;
         var now = window.performance.now();
         var startDelay = now + self.startPerceptionCorrection - expectedStart;
 
@@ -30694,19 +30700,7 @@ module.exports = function (_Renderer) {
           self.setVisualSegmentOpacity(segment, video);
         }
 
-        var audioFadeDuration = segment.audioFadeDuration || self.audioFadeDuration;
-        if (audioFadeDuration) {
-          audioFadeDuration = Math.min(audioFadeDuration, segmentDuration / 2);
-
-          // fade in
-          video.volume = 0;
-          new TWEEN.Tween(video).to({ volume: segment.volume }, audioFadeDuration).start();
-
-          setTimeout(function () {
-            // fade out
-            new TWEEN.Tween(video).to({ volume: 0 }, audioFadeDuration).start();
-          }, segmentDuration - audioFadeDuration);
-        }
+        self.fadeAudioForVideoSegment(segment, video);
 
         segment.didStart();
       }
@@ -30719,15 +30713,31 @@ module.exports = function (_Renderer) {
         }
 
         if (segment.loop) {
-          video.pause();
           video.currentTime = segment.startTime;
-          video.play();
           setTimeout(end, segmentDuration);
         } else {
           video.parentNode.removeChild(video);
           video.src = '';
           segment.cleanup();
         }
+      }
+    }
+  }, {
+    key: 'fadeAudioForVideoSegment',
+    value: function fadeAudioForVideoSegment(segment, video) {
+      var audioFadeDuration = segment.audioFadeDuration || this.audioFadeDuration;
+      if (audioFadeDuration) {
+        var segmentDuration = segment.msDuration();
+        audioFadeDuration = Math.min(audioFadeDuration, segmentDuration / 2);
+
+        // fade in
+        video.volume = 0;
+        new TWEEN.Tween(video).to({ volume: segment.volume }, audioFadeDuration).start();
+
+        setTimeout(function () {
+          // fade out
+          new TWEEN.Tween(video).to({ volume: 0 }, audioFadeDuration).start();
+        }, segmentDuration - audioFadeDuration);
       }
     }
   }, {
